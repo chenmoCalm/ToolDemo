@@ -1,0 +1,116 @@
+group 'com.bestvike'
+version '1.0.0'
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'maven'
+apply plugin: 'org.springframework.boot'
+apply plugin: "io.spring.dependency-management"
+
+sourceCompatibility = 1.8
+ext {
+    snippetsDir = file("$buildDir/generated-snippets")
+}
+configurations.all {
+    //默认情况下包才上传后24小时更新一次，这个配置自动更新为10s
+    //10秒钟，可自定义，如10,'minutes'10分钟，10,'hours'10小时
+    resolutionStrategy.cacheChangingModulesFor 10, 'seconds'
+}
+
+buildscript {
+    ext {
+        springBootVersion = '2.0.5.RELEASE'
+        // gralde -Prelease
+        if (project.hasProperty('release')) {
+            releasePublish = true
+        } else {
+            releasePublish = false;
+        }
+    }
+    repositories {
+        mavenLocal()
+        maven { url 'https://maven.bestvike.com/repository/maven-public/' }
+    }
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.6.RELEASE"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}"
+    }
+}
+
+repositories {
+    mavenLocal()
+    maven { url 'https://maven.bestvike.com/repository/maven-snapshots/' }
+    maven { url 'https://maven.bestvike.com/repository/maven-public/' }
+    maven { url 'https://maven.bestvike.com/repository/third-party/' }
+    flatDir {
+        dirs 'lib'
+    }
+}
+
+dependencyManagement {
+    imports {
+        mavenBom 'org.springframework.boot:spring-boot-starter-parent:' + springBootVersion
+    }
+}
+
+jar {
+    baseName = project.name
+    version = project.version
+    from('static') {
+        into 'static'
+    }
+}
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDirs 'src/main/java'
+        }
+    }
+}
+test {
+    outputs.dir snippetsDir
+}
+dependencies {
+
+    // spring boot
+    compile("org.springframework.boot:spring-boot-starter")
+    compile("org.springframework.boot:spring-boot-starter-web")
+//    compile("org.springframework.boot:spring-boot-starter-security")
+    compile("org.springframework.boot:spring-boot-starter-jdbc")
+    compile("org.springframework.boot:spring-boot-starter-amqp")
+    // spring
+    compile("org.springframework:spring-web")
+    compile("org.springframework:spring-webmvc")
+    compile("org.springframework.batch:spring-batch-core")
+    compile("org.springframework:spring-context-support")
+    // jdbc
+    compile("com.oracle:ojdbc6:11g")
+    compile("org.mariadb.jdbc:mariadb-java-client:2.2.1")
+//    compile("org.apache.logging.log4j:log4j-api:2.3")
+//    compile("org.apache.logging.log4j:log4j-core:2.3")
+    // java
+    compileOnly("javax.servlet:javax.servlet-api:3.1.0")
+    compile("javax.xml.bind:jaxb-api:2.3.0")
+    compile("com.sun.xml.bind:jaxb-core:2.3.0")
+    compile("com.sun.xml.bind:jaxb-impl:2.3.0")
+    compile("javax.activation:activation:1.1")
+    //mybatis
+    compile("tk.mybatis:mapper:4.1.5")
+    compile("org.apache.commons:commons-lang3:3.7")
+    runtime("org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.2")
+
+    // fastjson
+    compile("com.alibaba:fastjson:1.2.12")
+    compile("org.projectlombok:lombok:1.16.20")
+
+
+
+
+
+    testCompile("org.springframework.boot:spring-boot-starter-test")
+
+}
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
